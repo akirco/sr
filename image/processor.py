@@ -43,6 +43,24 @@ def normalize_model_name(name: str) -> str:
     return name
 
 
+def suppress_output(func, *args, **kwargs):
+    """抑制C库的stdout/stderr输出"""
+    old_stdout_fd = os.dup(1)
+    old_stderr_fd = os.dup(2)
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    os.dup2(devnull, 1)
+    os.dup2(devnull, 2)
+    os.close(devnull)
+    try:
+        result = func(*args, **kwargs)
+    finally:
+        os.dup2(old_stdout_fd, 1)
+        os.dup2(old_stderr_fd, 2)
+        os.close(old_stdout_fd)
+        os.close(old_stderr_fd)
+    return result
+
+
 def find_model_id(name: str) -> Optional[int]:
     """根据名称查找模型ID"""
     models = get_library_models()
@@ -66,16 +84,16 @@ class ImageProcessor:
 
     def init(self) -> bool:
         """初始化GPU/CPU"""
-        sts = sr.init()
+        sts = suppress_output(sr.init)
 
         if sts < 0:
             self.cpu_mode = True
 
         if self.cpu_mode:
             cpu_num = sr.getCpuCoreNum()
-            sts = sr.initSet(-1, cpu_num)
+            sts = suppress_output(sr.initSet, -1, cpu_num)
         else:
-            sts = sr.initSet(self.gpu_id)
+            sts = suppress_output(sr.initSet, self.gpu_id)
 
         self.initialized = sts >= 0
         return self.initialized
@@ -106,17 +124,16 @@ class ImageProcessor:
 
         back_id = 1
 
-        if (
-            sr.add(
-                data,
-                model_id,  # type: ignore
-                back_id,
-                scale,
-                tileSize=tile_size,
-                format=output_format,  # type: ignore
-            )
-            <= 0
-        ):
+        add_result = suppress_output(
+            sr.add,
+            data,
+            model_id,
+            back_id,
+            scale,
+            tileSize=tile_size,
+            format=output_format,
+        )
+        if add_result <= 0:
             return False, "添加任务失败"
 
         max_wait = 60
@@ -131,12 +148,12 @@ class ImageProcessor:
                     with open(output_file, "wb") as f:
                         f.write(new_data)
                     os.rename(output_file, output_path)
-                    sr.stop()
-                    return True, f"处理完成: {output_path}"
+                    suppress_output(sr.stop)
+                    return True, f"{tick:.2f}"
             time.sleep(1)
             wait_count += 1
 
-        sr.stop()
+        suppress_output(sr.stop)
         return False, "处理超时"
 
 

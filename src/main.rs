@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use indicatif::{ProgressBar, ProgressStyle};
 use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use std::path::{Path, PathBuf};
@@ -35,6 +36,23 @@ fn process_image(
     cpu: bool,
     model_path: Option<&Path>,
 ) -> Result<()> {
+    let spinner_style = ProgressStyle::with_template("{spinner:.cyan} {msg}")
+        .unwrap()
+        .tick_strings(&[
+            "▹▹▹▹▹",
+            "▸▹▹▹▹",
+            "▹▸▹▹▹",
+            "▹▹▸▹▹",
+            "▹▹▹▸▹",
+            "▹▹▹▹▸",
+            "▪▪▪▪▪",
+        ]);
+
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(spinner_style);
+    pb.set_message("正在处理图片...");
+    pb.enable_steady_tick(std::time::Duration::from_millis(100));
+
     Python::attach(|py| {
         let processor = py.import("image.processor")?;
         let model_path_str = model_path.map(|p| p.to_str().unwrap_or(""));
@@ -54,9 +72,11 @@ fn process_image(
             )?
             .extract::<(bool, String)>()?;
         if result.0 {
-            println!("{}", result.1);
+            let res = format!("处理完成! 耗时:{}", result.1);
+            pb.finish_with_message(res);
             Ok(())
         } else {
+            pb.finish_with_message("处理失败");
             anyhow::bail!("处理失败: {}", result.1)
         }
     })
