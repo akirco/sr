@@ -1,4 +1,4 @@
-"""Python图片超分辨率处理模块，使用PyO3暴露给Rust调用。"""
+"""Python image super-resolution processing module, exposed to Rust via PyO3."""
 
 import os
 import time
@@ -8,19 +8,19 @@ from sr_vulkan import sr_vulkan as sr
 
 MODEL_PREFIXES = ["REALCUGAN", "REALCUGAN_SE", "REALESRGAN", "REALSR", "WAIFU2X"]
 
-_LIBRARY_MODELS_CACHE: Optional[Dict[str, int]] = None
+LIBRARY_MODELS_CACHE: Optional[Dict[str, int]] = None
 
 
 def get_library_models() -> Dict[str, int]:
-    """获取模型缓存，延迟加载"""
-    global _LIBRARY_MODELS_CACHE
-    if _LIBRARY_MODELS_CACHE is None:
-        _LIBRARY_MODELS_CACHE = _get_all_models_from_library()
-    return _LIBRARY_MODELS_CACHE
+    """Get model cache with lazy loading."""
+    global LIBRARY_MODELS_CACHE
+    if LIBRARY_MODELS_CACHE is None:
+        LIBRARY_MODELS_CACHE = _get_all_models_from_library()
+    return LIBRARY_MODELS_CACHE
 
 
 def _get_all_models_from_library() -> Dict[str, int]:
-    """从sr_vulkan库动态获取所有模型"""
+    """Dynamically get all models from sr_vulkan library."""
     models = {}
     for attr in dir(sr):
         if attr.startswith("MODEL_"):
@@ -35,7 +35,7 @@ def _get_all_models_from_library() -> Dict[str, int]:
 
 
 def normalize_model_name(name: str) -> str:
-    """规范化模型名称"""
+    """Normalize model name."""
     name = name.lower()
     name = name.replace("-", "_").replace(" ", "_")
     if not name.startswith("model_"):
@@ -44,7 +44,7 @@ def normalize_model_name(name: str) -> str:
 
 
 def suppress_output(func, *args, **kwargs):
-    """抑制C库的stdout/stderr输出"""
+    """Suppress stdout/stderr output from C library."""
     old_stdout_fd = os.dup(1)
     old_stderr_fd = os.dup(2)
     devnull = os.open(os.devnull, os.O_WRONLY)
@@ -62,7 +62,7 @@ def suppress_output(func, *args, **kwargs):
 
 
 def find_model_id(name: str) -> Optional[int]:
-    """根据名称查找模型ID"""
+    """Find model ID by name."""
     models = get_library_models()
     normalized = normalize_model_name(name)
     if normalized in models:
@@ -74,16 +74,16 @@ def find_model_id(name: str) -> Optional[int]:
 
 
 class ImageProcessor:
-    """图片超分辨率处理器"""
+    """Image super-resolution processor."""
 
     def __init__(self, gpu_id: int = 0, cpu_mode: bool = False):
-        """初始化处理器"""
+        """Initialize processor."""
         self.gpu_id = gpu_id
         self.cpu_mode = cpu_mode
         self.initialized = False
 
     def init(self) -> bool:
-        """初始化GPU/CPU"""
+        """Initialize GPU/CPU."""
         sts = suppress_output(sr.init)
 
         if sts < 0:
@@ -107,17 +107,17 @@ class ImageProcessor:
         tile_size: int = 400,
         output_format: str = "webp",
     ) -> Tuple[bool, str]:
-        """处理图片超分辨率"""
+        """Process image super-resolution."""
         if not self.initialized:
             if not self.init():
-                return False, "初始化失败"
+                return False, "Initialization failed"
 
         if not os.path.exists(input_path):
-            return False, f"输入文件不存在: {input_path}"
+            return False, f"Input file not found: {input_path}"
 
         model_id = find_model_id(model)
         if model_id is None:
-            return False, f"未知模型: {model}"
+            return False, f"Unknown model: {model}"
 
         with open(input_path, "rb") as f:
             data = f.read()
@@ -134,7 +134,7 @@ class ImageProcessor:
             format=output_format,
         )
         if add_result <= 0:
-            return False, "添加任务失败"
+            return False, "Failed to add task"
 
         max_wait = 60
         wait_count = 0
@@ -154,11 +154,11 @@ class ImageProcessor:
             wait_count += 1
 
         suppress_output(sr.stop)
-        return False, "处理超时"
+        return False, "Processing timeout"
 
 
 def get_all_model_names() -> List[str]:
-    """获取所有可用模型名称"""
+    """Get all available model names."""
     return list(get_library_models().keys())
 
 
@@ -171,7 +171,7 @@ def process_image(
     cpu_mode: bool = False,
     model_path: Optional[str] = None,
 ) -> Tuple[bool, str]:
-    """处理单张图片（PyO3导出函数）"""
+    """Process single image (PyO3 exported function)."""
     if model_path:
         sr.setModelPath(model_path)
     processor = ImageProcessor(gpu_id=gpu_id, cpu_mode=cpu_mode)
@@ -181,15 +181,15 @@ def process_image(
 
 
 def get_model_info(model: str) -> dict:
-    """获取模型信息"""
+    """Get model information."""
     model_id = find_model_id(model)
     if model_id is not None:
-        return {"name": model, "id": model_id, "description": "sr_vulkan 模型"}
-    return {"name": model, "id": None, "description": "未知模型"}
+        return {"name": model, "id": model_id, "description": "sr_vulkan model"}
+    return {"name": model, "id": None, "description": "Unknown model"}
 
 
 def get_model_categories_formatted() -> str:
-    """获取格式化后的模型分类字符串"""
+    """Get formatted model categories string."""
     categories = {}
     for name in get_library_models().keys():
         for prefix in MODEL_PREFIXES:
