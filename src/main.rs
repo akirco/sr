@@ -50,7 +50,7 @@ fn process_image(
 
     let pb = ProgressBar::new_spinner();
     pb.set_style(spinner_style);
-    pb.set_message("正在处理图片...");
+    pb.set_message("Processing image...");
     pb.enable_steady_tick(std::time::Duration::from_millis(100));
 
     Python::attach(|py| {
@@ -72,12 +72,12 @@ fn process_image(
             )?
             .extract::<(bool, String)>()?;
         if result.0 {
-            let res = format!("处理完成! 耗时:{}", result.1);
+            let res = format!("Done! Time: {}", result.1);
             pb.finish_with_message(res);
             Ok(())
         } else {
-            pb.finish_with_message("处理失败");
-            anyhow::bail!("处理失败: {}", result.1)
+            pb.finish_with_message("Failed");
+            anyhow::bail!("Processing failed: {}", result.1)
         }
     })
 }
@@ -89,10 +89,10 @@ fn list_models() -> Result<()> {
             .call_method0("get_model_categories_formatted")?
             .extract()?;
 
-        println!("可用模型:\n");
+        println!("Available models:\n");
         println!("{}", categories);
 
-        println!("使用示例:");
+        println!("Usage examples:");
         println!("  sr -i input.jpg -o output.webp --scale 2");
         println!("  sr -i input.jpg -o output.webp --model waifu2x_cunet_up2x");
 
@@ -137,22 +137,24 @@ fn main() -> Result<()> {
     }
 
     let input = cli.input.unwrap_or_else(|| {
-        eprintln!("错误: 请指定输入文件 (-i/--input)");
+        eprintln!("Error: Please specify input file (-i/--input)");
         std::process::exit(1);
     });
 
     let output = cli.output.unwrap_or_else(|| {
-        eprintln!("错误: 请指定输出文件 (-o/--output)");
+        eprintln!("Error: Please specify output file (-o/--output)");
         std::process::exit(1);
     });
 
     let model = cli.model.unwrap_or_else(|| {
-        eprintln!("错误: 请指定模型名称 (--model)，使用 --list-models 查看所有模型");
+        eprintln!(
+            "Error: Please specify model name (--model), use --list-models to list all models"
+        );
         std::process::exit(1);
     });
 
     if !input.exists() {
-        anyhow::bail!("输入文件不存在: {:?}", input);
+        anyhow::bail!("Input file not found: {:?}", input);
     }
 
     process_image(
@@ -164,7 +166,7 @@ fn main() -> Result<()> {
         cli.cpu,
         cli.model_path.as_deref(),
     )
-    .context("图片处理失败")?;
+    .context("Image processing failed")?;
 
     Ok(())
 }
