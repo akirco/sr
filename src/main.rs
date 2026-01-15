@@ -87,7 +87,7 @@ fn inject() -> Result<()> {
 
         let processor_mod = PyModule::from_code(
             py,
-            c_str!(include_str!("../image/processor.py")), // 直接用 c_str! 包装
+            c_str!(include_str!("../image/processor.py")),
             c_str!("image/process.py"),
             c_str!("image.processor"),
         )?;
@@ -100,8 +100,6 @@ fn inject() -> Result<()> {
             c_str!("image"),
         )?;
         modules.set_item("image", image_mod)?;
-
-        println!("Python 模块导入成功");
 
         Ok(())
     })?;
