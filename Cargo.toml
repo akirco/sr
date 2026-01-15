@@ -12,7 +12,6 @@ clap = { version = "4.5.54", features = ["derive"] }
 pyo3 = { version = "0.27.2", features = ["auto-initialize"] }
 anyhow = "1.0"
 
-[build-dependencies]
 
 [features]
 pyo3 = ["pyo3/extension-module"]

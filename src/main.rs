@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use pyo3::ffi::c_str;
 use pyo3::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -79,7 +80,37 @@ fn list_models() -> Result<()> {
     })
 }
 
+fn inject() -> Result<()> {
+    Python::attach(|py| -> PyResult<()> {
+        let sys = py.import("sys")?;
+        let modules = sys.getattr("modules")?;
+
+        let processor_mod = PyModule::from_code(
+            py,
+            c_str!(include_str!("../image/processor.py")), // 直接用 c_str! 包装
+            c_str!("image/process.py"),
+            c_str!("image.processor"),
+        )?;
+        modules.set_item("image.processor", processor_mod)?;
+
+        let image_mod = PyModule::from_code(
+            py,
+            c_str!(include_str!("../image/__init__.py")),
+            c_str!("image/__init__.py"),
+            c_str!("image"),
+        )?;
+        modules.set_item("image", image_mod)?;
+
+        println!("Python 模块导入成功");
+
+        Ok(())
+    })?;
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
+    _ = inject();
     let cli = Cli::parse();
 
     if cli.list_models {

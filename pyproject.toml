@@ -8,7 +8,7 @@ dependencies = [
     "sr-vulkan>=2.0.1.1",
 ]
 authors = [
-    { name = "sr developers" }
+    { name = "akirco" }
 ]
 
 [project.scripts]
