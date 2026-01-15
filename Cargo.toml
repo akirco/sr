@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 clap = { version = "4.5.54", features = ["derive"] }
 pyo3 = { version = "0.27.2", features = ["auto-initialize"] }
-anyhow = "1.0"
+anyhow = "1.0.100"
 indicatif = "0.18.3"
 
 
