@@ -14,7 +14,7 @@ struct Cli {
     output: Option<PathBuf>,
     #[arg(short, long, default_value = "2.0")]
     scale: f32,
-    #[arg(short, long)]
+    #[arg(short, long, default_value = "REALESRGAN_X4PLUS_UP4X")]
     model: Option<String>,
     #[arg(long, default_value = "0")]
     gpu_id: i32,

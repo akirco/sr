@@ -17,7 +17,7 @@ pub fn process_image(
 }
 
 pub fn list_models() -> Result<String, String> {
-    Python::attach(|py| py_list_models(py)).map_err(|e| e.to_string())
+    Python::attach(py_list_models).map_err(|e| e.to_string())
 }
 
 #[pyfunction]
