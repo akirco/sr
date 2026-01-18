@@ -129,7 +129,6 @@ fn process_image_inner(
 
     let mut wait_count = 0;
     let max_wait = 60;
-
     while wait_count < max_wait {
         let info = sr.call_method1("load", (0,))?;
         if info.is_none() {

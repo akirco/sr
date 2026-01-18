@@ -5,11 +5,5 @@
 ```sh
 uv sync
 source .venv/bin/activate
-uv pip install sr-vulkan-model-waifu2x
-uv pip install sr-vulkan-model-realcugan
-uv pip install sr-vulkan-model-realesrgan
-uv pip install sr-vulkan-model-realsr
+cargo build
 ```
-
-
-`别问我为什么用rust调python,因为不会cpp😭`

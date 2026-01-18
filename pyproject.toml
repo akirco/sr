@@ -15,12 +15,3 @@ dependencies = [
 authors = [
     { name = "akirco" }
 ]
-
-[project.scripts]
-sr = "sr_bindings:main"
-
-
-[tool.maturin]
-features = ["pyo3"]
-module-name = "sr_bindings"
-packages = ["image"]
