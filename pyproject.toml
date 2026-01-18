@@ -5,7 +5,6 @@ description = "Image super-resolution CLI tool built with Rust and PyO3"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "maturin>=1.11.5",
     "sr-vulkan>=2.0.1.1",
     "sr-vulkan-model-realcugan>=1.0.1",
     "sr-vulkan-model-realesrgan>=1.0.1",
