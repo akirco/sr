@@ -15,7 +15,7 @@ wheels/
 
 /target
 
-
+/models
 # Added by cargo
 #
 # already existing elements were commented out

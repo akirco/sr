@@ -6,6 +6,9 @@ from typing import Dict, List, Optional, Tuple
 
 from sr_vulkan import sr_vulkan as sr
 
+MODEL_PATH_ENV = "SR_MODEL_PATH"
+
+
 MODEL_PREFIXES = ["REALCUGAN", "REALCUGAN_SE", "REALESRGAN", "REALSR", "WAIFU2X"]
 
 LIBRARY_MODELS_CACHE: Optional[Dict[str, int]] = None
@@ -55,7 +58,7 @@ def suppress_output(func, *args, **kwargs):
         result = func(*args, **kwargs)
     finally:
         os.dup2(old_stdout_fd, 1)
-        os.dup2(old_stderr_fd, 2)
+        os.dup2(old_stdout_fd, 2)
         os.close(old_stdout_fd)
         os.close(old_stderr_fd)
     return result
@@ -76,14 +79,23 @@ def find_model_id(name: str) -> Optional[int]:
 class ImageProcessor:
     """Image super-resolution processor."""
 
-    def __init__(self, gpu_id: int = 0, cpu_mode: bool = False):
+    def __init__(
+        self,
+        gpu_id: int = 0,
+        cpu_mode: bool = False,
+        model_path: Optional[str] = None,
+    ):
         """Initialize processor."""
         self.gpu_id = gpu_id
         self.cpu_mode = cpu_mode
         self.initialized = False
+        self.model_path = model_path or os.environ.get(MODEL_PATH_ENV)
 
     def init(self) -> bool:
         """Initialize GPU/CPU."""
+        if self.model_path:
+            sr.setModelPath(self.model_path)
+
         sts = suppress_output(sr.init)
 
         if sts < 0:
@@ -172,9 +184,10 @@ def process_image(
     model_path: Optional[str] = None,
 ) -> Tuple[bool, str]:
     """Process single image (PyO3 exported function)."""
-    if model_path:
-        sr.setModelPath(model_path)
-    processor = ImageProcessor(gpu_id=gpu_id, cpu_mode=cpu_mode)
+    effective_model_path = model_path or os.environ.get(MODEL_PATH_ENV)
+    processor = ImageProcessor(
+        gpu_id=gpu_id, cpu_mode=cpu_mode, model_path=effective_model_path
+    )
     return processor.process(
         input_path=input_path, output_path=output_path, scale=scale, model=model
     )

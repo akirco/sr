@@ -1,9 +1,8 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::Parser;
 use indicatif::{ProgressBar, ProgressStyle};
-use pyo3::ffi::c_str;
-use pyo3::prelude::*;
-use std::path::{Path, PathBuf};
+use sr_bindings::{list_models, process_image};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "sr")]
@@ -27,112 +26,16 @@ struct Cli {
     model_path: Option<PathBuf>,
 }
 
-fn process_image(
-    input: &Path,
-    output: &Path,
-    scale: f32,
-    model: &str,
-    gpu_id: i32,
-    cpu: bool,
-    model_path: Option<&Path>,
-) -> Result<()> {
-    let spinner_style = ProgressStyle::with_template("{spinner:.cyan} {msg}")
-        .unwrap()
-        .tick_strings(&[
-            "▹▹▹▹▹",
-            "▸▹▹▹▹",
-            "▹▸▹▹▹",
-            "▹▹▸▹▹",
-            "▹▹▹▸▹",
-            "▹▹▹▹▸",
-            "▪▪▪▪▪",
-        ]);
-
-    let pb = ProgressBar::new_spinner();
-    pb.set_style(spinner_style);
-    pb.set_message("Processing image...");
-    pb.enable_steady_tick(std::time::Duration::from_millis(100));
-
-    Python::attach(|py| {
-        let processor = py.import("image.processor")?;
-        let model_path_str = model_path.map(|p| p.to_str().unwrap_or(""));
-        let result = processor
-            .call_method(
-                "process_image",
-                (
-                    input.to_str().unwrap_or(""),
-                    output.to_str().unwrap_or(""),
-                    scale,
-                    model,
-                    gpu_id,
-                    cpu,
-                    model_path_str,
-                ),
-                None,
-            )?
-            .extract::<(bool, String)>()?;
-        if result.0 {
-            let res = format!("Done! Time: {}", result.1);
-            pb.finish_with_message(res);
-            Ok(())
-        } else {
-            pb.finish_with_message("Failed");
-            anyhow::bail!("Processing failed: {}", result.1)
-        }
-    })
-}
-
-fn list_models() -> Result<()> {
-    Python::attach(|py| {
-        let processor = py.import("image.processor")?;
-        let categories: String = processor
-            .call_method0("get_model_categories_formatted")?
-            .extract()?;
-
-        println!("Available models:\n");
-        println!("{}", categories);
-
-        println!("Usage examples:");
-        println!("  sr -i input.jpg -o output.webp --scale 2");
-        println!("  sr -i input.jpg -o output.webp --model waifu2x_cunet_up2x");
-
-        Ok(())
-    })
-}
-
-fn inject() -> Result<()> {
-    Python::attach(|py| -> PyResult<()> {
-        let sys = py.import("sys")?;
-        let modules = sys.getattr("modules")?;
-
-        let processor_mod = PyModule::from_code(
-            py,
-            c_str!(include_str!("../image/processor.py")),
-            c_str!("image/process.py"),
-            c_str!("image.processor"),
-        )?;
-        modules.set_item("image.processor", processor_mod)?;
-
-        let image_mod = PyModule::from_code(
-            py,
-            c_str!(include_str!("../image/__init__.py")),
-            c_str!("image/__init__.py"),
-            c_str!("image"),
-        )?;
-        modules.set_item("image", image_mod)?;
-
-        Ok(())
-    })?;
-
-    Ok(())
-}
-
 fn main() -> Result<()> {
-    _ = inject();
     let cli = Cli::parse();
 
     if cli.list_models {
-        list_models()?;
+        let models = list_models().map_err(anyhow::Error::msg)?;
+        println!("Available models:\n");
+        println!("{}", models);
+        println!("\nUsage examples:");
+        println!("  sr -i input.jpg -o output.webp --scale 2");
+        println!("  sr -i input.jpg -o output.webp --model waifu2x_cunet_up2x");
         return Ok(());
     }
 
@@ -157,16 +60,41 @@ fn main() -> Result<()> {
         anyhow::bail!("Input file not found: {:?}", input);
     }
 
-    process_image(
-        &input,
-        &output,
+    let spinner_style = ProgressStyle::with_template("{spinner:.cyan} {msg}")
+        .unwrap()
+        .tick_strings(&[
+            "▹▹▹▹▹",
+            "▸▹▹▹▹",
+            "▹▸▹▹▹",
+            "▹▹▸▹▹",
+            "▹▹▹▸▹",
+            "▹▹▹▹▸",
+            "▪▪▪▪▪",
+        ]);
+
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(spinner_style);
+    pb.set_message("Processing image...");
+    pb.enable_steady_tick(std::time::Duration::from_millis(100));
+
+    let (success, message) = process_image(
+        input.to_str().unwrap_or(""),
+        output.to_str().unwrap_or(""),
         cli.scale,
         &model,
         cli.gpu_id,
         cli.cpu,
-        cli.model_path.as_deref(),
+        cli.model_path.as_ref().map(|p| p.to_str().unwrap_or("")),
     )
-    .context("Image processing failed")?;
+    .map_err(|e| anyhow::anyhow!("Image processing failed: {}", e))?;
+
+    if success {
+        let res = format!("Done! Time: {}", message);
+        pb.finish_with_message(res);
+    } else {
+        pb.finish_with_message("Failed");
+        anyhow::bail!("Processing failed: {}", message);
+    }
 
     Ok(())
 }
