@@ -6,5 +6,6 @@
 git clone https://github.com/akirco/sr
 cd sr
 uv sync
-ln -s "$(pwd)/bin/sr" ~/.local/bin/sr
+cargo build -r
+ln -s "$(pwd)/target/release/sr" ~/.local/bin/sr
 ```

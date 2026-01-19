@@ -13,6 +13,8 @@ wheels/
 
 # Added by cargo
 
+/bin
+
 /target
 
 /models
