@@ -32,8 +32,7 @@ jobs:
 
       - name: Package
         run: |
-          PYTHON_BIN="$(uv python find)"
-          UV_PYTHON="$(dirname "$(dirname "$PYTHON_BIN")")"
+          UV_PYTHON="$(uv run -- python3 -c "import sys; print(sys.base_prefix)")"
           OUT="/tmp/sr-portable"
           rm -rf "$OUT"
           mkdir -p "$OUT/lib"
