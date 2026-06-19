@@ -26,42 +26,42 @@ requires-dist = [
 [[package]]
 name = "sr-vulkan"
 version = "2.0.1.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/17/a9/90297011b5e8805a8594c4e55c2ce28032773ae524ab1d36d5196652d887/sr-vulkan-2.0.1.1.tar.gz", hash = "sha256:4697919171c84feec5adb1fbbb7a835b32f18f5645f910ac0735fb2c94b32135", size = 38742388, upload-time = "2025-10-21T01:36:29.475Z" }
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/17/a9/90297011b5e8805a8594c4e55c2ce28032773ae524ab1d36d5196652d887/sr-vulkan-2.0.1.1.tar.gz", hash = "sha256:4697919171c84feec5adb1fbbb7a835b32f18f5645f910ac0735fb2c94b32135", size = 38742388, upload-time = "2025-10-21T01:36:29.475Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/9a/b9645ff7dce152c4c7cf8f7a7c894ae2e73b99e3c5ac6526dd150f7fd5e1/sr_vulkan-2.0.1.1-cp37-abi3-macosx_10_4_universal2.whl", hash = "sha256:eae274ed9831d9a466edffa1622cc6c9ff11c7b54d365a62bfacfd92f5c08bae", size = 9807501, upload-time = "2025-10-21T01:36:14.78Z" },
-    { url = "https://files.pythonhosted.org/packages/2f/bf/8da6f4f37cc9ad76a46a9722c5dc5ca8d3061e8471ece5a9488088037cee/sr_vulkan-2.0.1.1-cp37-abi3-manylinux_2_17_x86_64.whl", hash = "sha256:a00fa688fd74211a187b00fa83f05ac6ad65ec9e884263618f06eaf93597d383", size = 3647541, upload-time = "2025-10-21T01:36:17.383Z" },
-    { url = "https://files.pythonhosted.org/packages/5e/9a/9a5eb50fa27e0377be3c56fa803802053957d4900c8ff3d5eafb8b8d6fdd/sr_vulkan-2.0.1.1-cp37-abi3-win_amd64.whl", hash = "sha256:a93ef8d3ff6f3ce766a8df408bc06bac3122affc9e3d260d31a832dcc2c87c6b", size = 2595388, upload-time = "2025-10-21T01:36:19.603Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/bd/9a/b9645ff7dce152c4c7cf8f7a7c894ae2e73b99e3c5ac6526dd150f7fd5e1/sr_vulkan-2.0.1.1-cp37-abi3-macosx_10_4_universal2.whl", hash = "sha256:eae274ed9831d9a466edffa1622cc6c9ff11c7b54d365a62bfacfd92f5c08bae", size = 9807501, upload-time = "2025-10-21T01:36:14.78Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/2f/bf/8da6f4f37cc9ad76a46a9722c5dc5ca8d3061e8471ece5a9488088037cee/sr_vulkan-2.0.1.1-cp37-abi3-manylinux_2_17_x86_64.whl", hash = "sha256:a00fa688fd74211a187b00fa83f05ac6ad65ec9e884263618f06eaf93597d383", size = 3647541, upload-time = "2025-10-21T01:36:17.383Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/5e/9a/9a5eb50fa27e0377be3c56fa803802053957d4900c8ff3d5eafb8b8d6fdd/sr_vulkan-2.0.1.1-cp37-abi3-win_amd64.whl", hash = "sha256:a93ef8d3ff6f3ce766a8df408bc06bac3122affc9e3d260d31a832dcc2c87c6b", size = 2595388, upload-time = "2025-10-21T01:36:19.603Z" },
 ]
 
 [[package]]
 name = "sr-vulkan-model-realcugan"
 version = "1.0.1"
-source = { registry = "https://pypi.org/simple" }
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d5/80/6b93121f57518acbb0302159611fe98601920b8afff95b4ea277c7b21e21/sr_vulkan_model_realcugan-1.0.1-py3-none-any.whl", hash = "sha256:afb402627d83231e642b8803dc084565e1d8c54e7fa08af92486543032ce75d9", size = 41382405, upload-time = "2025-10-15T08:33:29.803Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/d5/80/6b93121f57518acbb0302159611fe98601920b8afff95b4ea277c7b21e21/sr_vulkan_model_realcugan-1.0.1-py3-none-any.whl", hash = "sha256:afb402627d83231e642b8803dc084565e1d8c54e7fa08af92486543032ce75d9", size = 41382405, upload-time = "2025-10-15T08:33:29.803Z" },
 ]
 
 [[package]]
 name = "sr-vulkan-model-realesrgan"
 version = "1.0.1"
-source = { registry = "https://pypi.org/simple" }
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/e0/8785f5833b06feb585634df9152450fd0272df12be001e34729f54f39ab6/sr_vulkan_model_realesrgan-1.0.1-py3-none-any.whl", hash = "sha256:41bcd2ad4971842deb63320561281a5b426ed23120f8d30e554b9232ebf04402", size = 42796005, upload-time = "2025-10-15T08:34:08.16Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/17/e0/8785f5833b06feb585634df9152450fd0272df12be001e34729f54f39ab6/sr_vulkan_model_realesrgan-1.0.1-py3-none-any.whl", hash = "sha256:41bcd2ad4971842deb63320561281a5b426ed23120f8d30e554b9232ebf04402", size = 42796005, upload-time = "2025-10-15T08:34:08.16Z" },
 ]
 
 [[package]]
 name = "sr-vulkan-model-realsr"
 version = "1.0.1"
-source = { registry = "https://pypi.org/simple" }
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/e3/1506620e4102ac5b864db4dec3a3233e011349707c6fc57d9c7978eddbd7/sr_vulkan_model_realsr-1.0.1-py3-none-any.whl", hash = "sha256:958fcc98f9c7a891521967bb7674fbd0982c3c7955dcf30cb56e41e1c1971cd8", size = 30950637, upload-time = "2025-10-15T08:34:50.247Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/da/e3/1506620e4102ac5b864db4dec3a3233e011349707c6fc57d9c7978eddbd7/sr_vulkan_model_realsr-1.0.1-py3-none-any.whl", hash = "sha256:958fcc98f9c7a891521967bb7674fbd0982c3c7955dcf30cb56e41e1c1971cd8", size = 30950637, upload-time = "2025-10-15T08:34:50.247Z" },
 ]
 
 [[package]]
 name = "sr-vulkan-model-waifu2x"
 version = "1.0.1"
-source = { registry = "https://pypi.org/simple" }
+source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/cb/aefb05235c68b8a72444779d56505a5047692f2c13c497e8131c8f710f29/sr_vulkan_model_waifu2x-1.0.1-py3-none-any.whl", hash = "sha256:64b535fc96ff392825535915ef3f03e4820b8c18aace861aa0d9b49b0628634b", size = 33479155, upload-time = "2025-10-15T08:35:16.515Z" },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/75/cb/aefb05235c68b8a72444779d56505a5047692f2c13c497e8131c8f710f29/sr_vulkan_model_waifu2x-1.0.1-py3-none-any.whl", hash = "sha256:64b535fc96ff392825535915ef3f03e4820b8c18aace861aa0d9b49b0628634b", size = 33479155, upload-time = "2025-10-15T08:35:16.515Z" },
 ]

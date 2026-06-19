@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install Python dependencies
+        run: uv sync
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          UV_PYTHON="$(uv python dir)/cpython-3.11-linux-x86_64-gnu"
+          OUT="/tmp/sr-portable"
+          rm -rf "$OUT"
+          mkdir -p "$OUT/lib"
+
+          cp target/release/sr "$OUT/"
+          cp target/release/libpython3.11.so.1.0 "$OUT/lib/"
+          cp -a target/release/libpython3.11.so "$OUT/lib/"
+          cp -r "$UV_PYTHON/lib/python3.11" "$OUT/lib/"
+          cp -r .venv/lib/python3.11/site-packages/sr_vulkan* "$OUT/lib/python3.11/site-packages/"
+
+          rm -rf "$OUT/lib/python3.11"/{test,tkinter,idlelib,ensurepip,lib2to3,distutils,pydoc_data,venv}
+          rm -rf "$OUT/lib/python3.11/site-packages"/{pip,pip-*,setuptools*,_distutils_hack,distutils-precedence.pth}
+          rm -f "$OUT/lib/python3.11/site-packages"/{_virtualenv.pth,_virtualenv.py}
+          find "$OUT" -name "__pycache__" -type d -exec rm -rf {} +
+          find "$OUT" -name "*.pyc" -delete
+
+          cp scripts/run.sh "$OUT/"
+          chmod +x "$OUT/run.sh"
+
+          tar czf sr-portable-linux-x86_64.tar.gz -C "$OUT" .
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sr-portable-linux-x86_64.tar.gz

@@ -14,7 +14,7 @@ fn main() {
     if output.status.success() {
         let python_dir = String::from_utf8(output.stdout).expect("Invalid UTF-8");
         let libpython_src = format!(
-            "{}/cpython-3.11.14-linux-x86_64-gnu/lib/libpython3.11.so.1.0",
+            "{}/cpython-3.11-linux-x86_64-gnu/lib/libpython3.11.so.1.0",
             python_dir.trim()
         );
         let libpython_dst = target_dir.join("libpython3.11.so.1.0");

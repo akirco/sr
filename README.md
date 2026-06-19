@@ -6,6 +6,7 @@
 git clone https://github.com/akirco/sr
 cd sr
 uv sync
+source .venv/bin/activate
 cargo build -r
 ln -s "$(pwd)/target/release/sr" ~/.local/bin/sr
 ```
