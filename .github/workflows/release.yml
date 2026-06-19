@@ -23,7 +23,9 @@ jobs:
 
       - name: Build
         run: |
-          PYTHON_SYS_EXECUTABLE="$(uv python find)" cargo build --release
+          source .venv/bin/activate
+          python --version
+          cargo build --release
 
       - name: Package
         run: |
