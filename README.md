@@ -14,7 +14,7 @@ ln -s "$(pwd)/target/release/sr" ~/.local/bin/sr
 ## 安装
 
 ```
-curl -fsSL https://github.com/akirco/sr/raw/main/scripts/install.sh | bash
+curl -fsSL https://github.com/akirco/sr/raw/master/scripts/install.sh | bash
 ```
 
 
