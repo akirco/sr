@@ -11,6 +11,13 @@ cargo build -r
 ln -s "$(pwd)/target/release/sr" ~/.local/bin/sr
 ```
 
+## 安装
+
+```
+curl -fsSL https://github.com/akirco/sr/raw/main/scripts/install.sh | bash
+```
+
+
 ```sh
 sr -h
 Usage: sr [OPTIONS]
