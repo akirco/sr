@@ -1,8 +1,16 @@
 use anyhow::Result;
 use clap::Parser;
-use indicatif::{ProgressBar, ProgressStyle};
 use sr_bindings::{list_models, process_image};
+use std::io::{BufRead, BufReader, Write};
+use std::os::fd::FromRawFd;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
+
+struct ProgressState {
+    done: AtomicBool,
+    progress: AtomicU64,
+}
 
 #[derive(Parser, Debug)]
 #[command(name = "sr")]
@@ -24,6 +32,70 @@ struct Cli {
     list_models: bool,
     #[arg(long)]
     model_path: Option<PathBuf>,
+    #[arg(short, long)]
+    verbose: bool,
+}
+
+struct StderrCapture {
+    saved_fd: i32,
+    thread: Option<std::thread::JoinHandle<()>>,
+}
+
+impl StderrCapture {
+    fn start(state: Arc<ProgressState>) -> Option<Self> {
+        let mut fds: [i32; 2] = [0, 0];
+        unsafe {
+            if libc::pipe(fds.as_mut_ptr()) != 0 {
+                return None;
+            }
+        }
+        let read_fd = fds[0];
+        let write_fd = fds[1];
+
+        let saved_fd = unsafe { libc::dup(2) };
+        if saved_fd < 0 {
+            unsafe {
+                libc::close(read_fd);
+                libc::close(write_fd);
+            }
+            return None;
+        }
+
+        unsafe {
+            libc::dup2(write_fd, 2);
+            libc::close(write_fd);
+        }
+
+        let thread = std::thread::spawn(move || {
+            let file = unsafe { std::fs::File::from_raw_fd(read_fd) };
+            for line in BufReader::new(file).lines().map_while(Result::ok) {
+                if let Some(pct) = line.strip_suffix('%') {
+                    if let Ok(val) = pct.trim().parse::<f64>() {
+                        state
+                            .progress
+                            .store((val * 100.0) as u64, Ordering::Relaxed);
+                    }
+                }
+            }
+        });
+
+        Some(StderrCapture {
+            saved_fd,
+            thread: Some(thread),
+        })
+    }
+}
+
+impl Drop for StderrCapture {
+    fn drop(&mut self) {
+        unsafe {
+            libc::dup2(self.saved_fd, 2);
+            libc::close(self.saved_fd);
+        }
+        if let Some(t) = self.thread.take() {
+            t.join().ok();
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -60,39 +132,69 @@ fn main() -> Result<()> {
         anyhow::bail!("Input file not found: {:?}", input);
     }
 
-    let spinner_style = ProgressStyle::with_template("{spinner:.cyan} {msg}")
+    let input_path = input.display().to_string();
+    let output_path = output.display().to_string();
+
+    let state = Arc::new(ProgressState {
+        done: AtomicBool::new(false),
+        progress: AtomicU64::new(u64::MAX),
+    });
+
+    let _capture: Option<StderrCapture> = if cli.verbose {
+        None
+    } else {
+        StderrCapture::start(state.clone())
+    };
+
+    let process_state = state.clone();
+    let process = std::thread::spawn(move || {
+        let result = process_image(
+            input.to_str().unwrap_or(""),
+            output.to_str().unwrap_or(""),
+            cli.scale,
+            &model,
+            cli.gpu_id,
+            cli.cpu,
+            cli.model_path.as_ref().map(|p| p.to_str().unwrap_or("")),
+        );
+        process_state.done.store(true, Ordering::Relaxed);
+        result
+    });
+
+    let spinner = ['-', '\\', '|', '/'];
+    let mut idx = 0;
+
+    while !state.done.load(Ordering::Relaxed) {
+        let p = state.progress.load(Ordering::Relaxed);
+        if p == u64::MAX {
+            print!("\r\x1b[KProcessing... {}", spinner[idx % 4]);
+        } else {
+            let filled = ((p as f64 / 10000.0) * 40.0) as usize;
+            print!(
+                "\r\x1b[K[{}{}] {}%",
+                "█".repeat(filled),
+                "░".repeat(40 - filled),
+                p / 100
+            );
+        }
+        std::io::stdout().flush().ok();
+        idx += 1;
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+
+    print!("\r\x1b[K");
+    std::io::stdout().flush().ok();
+
+    let (success, message) = process
+        .join()
         .unwrap()
-        .tick_strings(&[
-            "▹▹▹▹▹",
-            "▸▹▹▹▹",
-            "▹▸▹▹▹",
-            "▹▹▸▹▹",
-            "▹▹▹▸▹",
-            "▹▹▹▹▸",
-            "▪▪▪▪▪",
-        ]);
-
-    let pb = ProgressBar::new_spinner();
-    pb.set_style(spinner_style);
-    pb.set_message("Processing image...");
-    pb.enable_steady_tick(std::time::Duration::from_millis(100));
-
-    let (success, message) = process_image(
-        input.to_str().unwrap_or(""),
-        output.to_str().unwrap_or(""),
-        cli.scale,
-        &model,
-        cli.gpu_id,
-        cli.cpu,
-        cli.model_path.as_ref().map(|p| p.to_str().unwrap_or("")),
-    )
-    .map_err(|e| anyhow::anyhow!("Image processing failed: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Image processing failed: {}", e))?;
 
     if success {
-        let res = format!("Done! Time: {}", message);
-        pb.finish_with_message(res);
+        println!("==> {} -> {}", input_path, output_path);
+        println!("Done! Time: {}", message);
     } else {
-        pb.finish_with_message("Failed");
+        eprintln!("Failed: {}", message);
         anyhow::bail!("Processing failed: {}", message);
     }
 

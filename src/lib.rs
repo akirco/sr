@@ -22,6 +22,7 @@ pub fn list_models() -> Result<String, String> {
 
 #[pyfunction]
 #[pyo3(name = "process_image")]
+#[allow(clippy::too_many_arguments)]
 fn py_process_image(
     py: Python,
     input: &str,

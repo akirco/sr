@@ -1,6 +1,6 @@
 [package]
 name = "sr"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [lib]
@@ -13,9 +13,12 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.54", features = ["derive"] }
-pyo3 = { version = "0.27.2", features = ["auto-initialize","extension-module"] }
+pyo3 = { version = "0.27.2", features = [
+  "auto-initialize",
+  "extension-module",
+] }
 anyhow = "1.0.100"
-indicatif = "0.18.3"
+libc = "0.2"
 
 [profile.release]
 opt-level = 3
