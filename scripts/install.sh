@@ -2,7 +2,7 @@
 set -e
 
 REPO="akirco/sr"
-VERSION="v0.1.1"
+VERSION="v0.1.2"
 FILENAME="sr-portable-linux-x86_64.tar.gz"
 URL="https://github.com/$REPO/releases/download/$VERSION/$FILENAME"
 INSTALL_DIR="$HOME/.sr"

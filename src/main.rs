@@ -16,19 +16,26 @@ struct ProgressState {
 #[command(name = "sr")]
 #[command(version = "0.2.0")]
 struct Cli {
+    /// Input image file
     #[arg(short, long)]
     input: Option<PathBuf>,
+    /// Output image file or directory
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Scale factor (e.g. 2 for 2x upscaling)
     #[arg(short, long, default_value = "2.0")]
     scale: f32,
+    /// Model name (use --list-models to see available models)
     #[arg(short, long, default_value = "REALESRGAN_X4PLUS_UP4X")]
     model: Option<String>,
+    /// GPU ID to use (default: 0)
     #[arg(long, default_value = "0")]
     gpu_id: i32,
     #[arg(long)]
+    /// Use CPU instead of GPU
     cpu: bool,
     #[arg(long)]
+    /// List available models and exit
     list_models: bool,
     #[arg(long)]
     model_path: Option<PathBuf>,
@@ -116,7 +123,7 @@ fn main() -> Result<()> {
         std::process::exit(1);
     });
 
-    let output = cli.output.unwrap_or_else(|| {
+    let mut output = cli.output.unwrap_or_else(|| {
         eprintln!("Error: Please specify output file (-o/--output)");
         std::process::exit(1);
     });
@@ -130,6 +137,12 @@ fn main() -> Result<()> {
 
     if !input.exists() {
         anyhow::bail!("Input file not found: {:?}", input);
+    }
+
+    if output.is_dir() {
+        let stem = input.file_stem().unwrap_or_default();
+        let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("png");
+        output = output.join(format!("{}_{}.{}", model, stem.to_string_lossy(), ext));
     }
 
     let input_path = input.display().to_string();
@@ -191,7 +204,7 @@ fn main() -> Result<()> {
         .map_err(|e| anyhow::anyhow!("Image processing failed: {}", e))?;
 
     if success {
-        println!("==> {} -> {}", input_path, output_path);
+        println!("==> {} → {}", input_path, output_path);
         println!("Done! Time: {}", message);
     } else {
         eprintln!("Failed: {}", message);
