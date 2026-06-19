@@ -22,11 +22,13 @@ jobs:
         run: uv sync
 
       - name: Build
-        run: cargo build --release
+        run: |
+          PYTHON_SYS_EXECUTABLE="$(uv python find)" cargo build --release
 
       - name: Package
         run: |
-          UV_PYTHON="$(uv python dir)/cpython-3.11-linux-x86_64-gnu"
+          PYTHON_BIN="$(uv python find)"
+          UV_PYTHON="$(dirname "$(dirname "$PYTHON_BIN")")"
           OUT="/tmp/sr-portable"
           rm -rf "$OUT"
           mkdir -p "$OUT/lib"
